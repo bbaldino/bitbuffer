@@ -1,5 +1,6 @@
 // This helper makes the bit reading/writing functionality cleaner, since the caller can do an
 // exhaustive match on the result and we can enforce which values are allowed.
+#[derive(Debug, PartialOrd, PartialEq)]
 pub enum Bit {
     Zero = 0,
     One = 1,

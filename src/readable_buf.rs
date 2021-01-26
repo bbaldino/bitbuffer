@@ -3,7 +3,8 @@ use crate::error::CursorResult;
 use std::ops::{BitOrAssign, ShlAssign};
 
 pub trait ReadableBuf {
-    /// Return how many bytes are remaining in this buffer
+    /// Return how many bytes are remaining in this buffer.  Note that "half-consumed" bytes
+    /// (from reading individual bits) are counted as "full" bytes here.
     fn bytes_remaining(&self) -> usize;
 
     /// Consume the next bit and return it as a bool
@@ -49,6 +50,9 @@ pub trait ReadableBuf {
 
     /// Create a 'sub buffer' which starts at this ReadableBuf's current position
     /// and contains the next |length| bytes.
+    /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
+    /// the position of the parent buffer by the size of the sub-buffer.  I think I'll have
+    /// to see how it feels when using it and see which makes more sense.
     fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf + 'b>>
     where
         'a: 'b;
@@ -66,6 +70,11 @@ pub trait ReadableBuf {
 pub trait ReadableBufExtra {
     /// Consume the next bit and return it as type T
     fn read_bit_as<T: From<u8>>(&self) -> CursorResult<T>;
+
+    /// Consume the next |num_bits| and return them as type T
+    fn read_bits_as<T>(&self, num_bits: usize) -> CursorResult<T>
+    where
+        T: From<u8> + Default + ShlAssign<u8> + BitOrAssign;
 }
 
 impl ReadableBufExtra for dyn ReadableBuf {
@@ -73,17 +82,16 @@ impl ReadableBufExtra for dyn ReadableBuf {
         let bit_val: u8 = self.read_bit()?.into();
         Ok(bit_val.into())
     }
-}
 
-// Consume the next |num_bits| and return them as type T
-// fn read_bits_as<T>(&self, num_bits: usize) -> CursorResult<T>
-// where
-//     T: From<u8> + Default + ShlAssign<u8> + BitOrAssign
-// {
-//     let mut value: T = Default::default();
-//     for _ in 0..num_bits {
-//         value <<= 1u8;
-//         value |= self.read_bit_as()?;
-//     }
-//     Ok(value)
-// }
+    fn read_bits_as<T>(&self, num_bits: usize) -> CursorResult<T>
+    where
+        T: From<u8> + Default + ShlAssign<u8> + BitOrAssign,
+    {
+        let mut value: T = Default::default();
+        for _ in 0..num_bits {
+            value <<= 1u8;
+            value |= self.read_bit_as()?;
+        }
+        Ok(value)
+    }
+}

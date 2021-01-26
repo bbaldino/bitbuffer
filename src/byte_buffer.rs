@@ -63,11 +63,17 @@ impl ReadableBuf for ByteBuffer<'_> {
     }
 
     fn read_bit_as_bool(&self) -> CursorResult<bool> {
-        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| b.into())
+        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| {
+            self.advance_bits(1);
+            b.into()
+        })
     }
 
     fn read_bit(&self) -> CursorResult<Bit> {
-        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position())
+        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| {
+            self.advance_bits(1);
+            b
+        })
     }
 
     fn read_u8(&self) -> CursorResult<u8> {
@@ -91,37 +97,69 @@ impl ReadableBuf for ByteBuffer<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ops::Sub;
 
     #[test]
-    fn test() {
+    fn test_bytes_remaining() {
         let data: Vec<u8> = vec![1, 2, 3];
         let bb = ByteBuffer::from_vec(data);
 
-        foo(&bb);
+        assert_eq!(bb.bytes_remaining(), 3);
+        let _ = bb.read_bit();
+        assert_eq!(bb.bytes_remaining(), 3);
+        let _ = (&bb as &dyn ReadableBuf).read_bits_as::<u8>(7);
+        assert_eq!(bb.bytes_remaining(), 2);
+
+        let _ = bb.read_u8();
+        assert_eq!(bb.bytes_remaining(), 1);
     }
 
     #[test]
-    fn test2() {
-        let data: Vec<u8> = vec![0b11110000, 2, 3];
+    fn test_read_bit_as_bool() {
+        let data: Vec<u8> = vec![0b11110000];
         let bb = ByteBuffer::from_vec(data);
 
-        println!("Got bool {}", bb.read_bit_as_bool().unwrap());
+        assert_eq!(bb.read_bit_as_bool().unwrap(), true);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), true);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), true);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), true);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), false);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), false);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), false);
+        assert_eq!(bb.read_bit_as_bool().unwrap(), false);
     }
 
-    fn foo(buf: &dyn ReadableBuf) {
-        let v = buf.read_u8().unwrap();
-        println!("Got value {}", v);
-        println!("{} bytes left in original buffer", buf.bytes_remaining());
-        let sb = buf.sub_buffer(2).unwrap();
+    #[test]
+    fn test_read_bit() {
+        let data: Vec<u8> = vec![0b11110000];
+        let bb = ByteBuffer::from_vec(data);
 
-        let v = sb.read_u8().unwrap();
-        println!("Got value {}", v);
-        println!("{} bytes left in sub buffer", sb.bytes_remaining());
+        assert_eq!(bb.read_bit().unwrap(), Bit::One);
+        assert_eq!(bb.read_bit().unwrap(), Bit::One);
+        assert_eq!(bb.read_bit().unwrap(), Bit::One);
+        assert_eq!(bb.read_bit().unwrap(), Bit::One);
+        assert_eq!(bb.read_bit().unwrap(), Bit::Zero);
+        assert_eq!(bb.read_bit().unwrap(), Bit::Zero);
+        assert_eq!(bb.read_bit().unwrap(), Bit::Zero);
+        assert_eq!(bb.read_bit().unwrap(), Bit::Zero);
+    }
 
-        let ssb = sb.sub_buffer(1).unwrap();
-        let v = ssb.read_u8().unwrap();
-        println!("Got value {}", v);
-        println!("{} bytes left in sub buffer", ssb.bytes_remaining());
+    #[test]
+    fn test_read_u8() {
+        let data: Vec<u8> = vec![1, 2, 3];
+        let bb = ByteBuffer::from_vec(data);
+
+        assert_eq!(bb.read_u8().unwrap(), 1u8);
+        assert_eq!(bb.read_u8().unwrap(), 2u8);
+        assert_eq!(bb.read_u8().unwrap(), 3u8);
+    }
+
+    #[test]
+    fn test_sub_buffer() {
+        let data: Vec<u8> = vec![1, 2, 3];
+        let bb = ByteBuffer::from_vec(data);
+
+        let sb = bb.sub_buffer(2).unwrap();
+        assert_eq!(sb.read_u8().unwrap(), 1u8);
+        assert_eq!(sb.read_u8().unwrap(), 2u8);
     }
 }
