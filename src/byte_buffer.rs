@@ -67,7 +67,7 @@ impl ReadableBuf for ByteBuffer<'_> {
     }
 
     fn read_bit(&self) -> CursorResult<Bit> {
-        unimplemented!()
+        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position())
     }
 
     fn read_u8(&self) -> CursorResult<u8> {
