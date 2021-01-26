@@ -1,7 +1,8 @@
 use crate::bit::Bit;
 use crate::byte_buffer_slice::ByteBufferSlice;
 use crate::error::CursorResult;
-use crate::readable_buf::ReadableBuf;
+use crate::helpers::{read_byte, take_bit_as};
+use crate::readable_buf::{ReadableBuf, ReadableBufExtra};
 use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::ops::{AddAssign, Div, Rem};
@@ -12,6 +13,7 @@ pub struct ByteBuffer<'a> {
     marker: PhantomData<&'a ()>,
 }
 
+/// Ctors
 impl<'a> ByteBuffer<'a> {
     pub fn from_vec(buf: Vec<u8>) -> ByteBuffer<'a> {
         ByteBuffer {
@@ -55,13 +57,13 @@ impl ByteBuffer<'_> {
     }
 }
 
-impl<'a> ReadableBuf<'a> for ByteBuffer<'a> {
+impl ReadableBuf for ByteBuffer<'_> {
     fn bytes_remaining(&self) -> usize {
         self.bytes_remaining()
     }
 
     fn read_bit_as_bool(&self) -> CursorResult<bool> {
-        unimplemented!()
+        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| b.into())
     }
 
     fn read_bit(&self) -> CursorResult<Bit> {
@@ -69,10 +71,12 @@ impl<'a> ReadableBuf<'a> for ByteBuffer<'a> {
     }
 
     fn read_u8(&self) -> CursorResult<u8> {
-        unimplemented!()
+        let byte = read_byte(&self.buf, self.byte_offset())?;
+        self.advance_bytes(1);
+        Ok(byte)
     }
 
-    fn sub_buffer<'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf<'b> + 'b>>
+    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf + 'b>>
     where
         'a: 'b,
     {
@@ -81,5 +85,43 @@ impl<'a> ReadableBuf<'a> for ByteBuffer<'a> {
             bit_offset: RefCell::new(0),
         };
         Ok(Box::new(b))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ops::Sub;
+
+    #[test]
+    fn test() {
+        let data: Vec<u8> = vec![1, 2, 3];
+        let bb = ByteBuffer::from_vec(data);
+
+        foo(&bb);
+    }
+
+    #[test]
+    fn test2() {
+        let data: Vec<u8> = vec![0b11110000, 2, 3];
+        let bb = ByteBuffer::from_vec(data);
+
+        println!("Got bool {}", bb.read_bit_as_bool().unwrap());
+    }
+
+    fn foo(buf: &dyn ReadableBuf) {
+        let v = buf.read_u8().unwrap();
+        println!("Got value {}", v);
+        println!("{} bytes left in original buffer", buf.bytes_remaining());
+        let sb = buf.sub_buffer(2).unwrap();
+
+        let v = sb.read_u8().unwrap();
+        println!("Got value {}", v);
+        println!("{} bytes left in sub buffer", sb.bytes_remaining());
+
+        let ssb = sb.sub_buffer(1).unwrap();
+        let v = ssb.read_u8().unwrap();
+        println!("Got value {}", v);
+        println!("{} bytes left in sub buffer", ssb.bytes_remaining());
     }
 }

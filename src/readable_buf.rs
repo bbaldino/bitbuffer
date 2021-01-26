@@ -2,7 +2,7 @@ use crate::bit::Bit;
 use crate::error::CursorResult;
 use std::ops::{BitOrAssign, ShlAssign};
 
-pub trait ReadableBuf<'a> {
+pub trait ReadableBuf {
     /// Return how many bytes are remaining in this buffer
     fn bytes_remaining(&self) -> usize;
 
@@ -49,7 +49,7 @@ pub trait ReadableBuf<'a> {
 
     /// Create a 'sub buffer' which starts at this ReadableBuf's current position
     /// and contains the next |length| bytes.
-    fn sub_buffer<'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf<'b> + 'b>>
+    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf + 'b>>
     where
         'a: 'b;
 }
@@ -68,7 +68,7 @@ pub trait ReadableBufExtra {
     fn read_bit_as<T: From<u8>>(&self) -> CursorResult<T>;
 }
 
-impl ReadableBufExtra for dyn ReadableBuf<'_> {
+impl ReadableBufExtra for dyn ReadableBuf {
     fn read_bit_as<T: From<u8>>(&self) -> CursorResult<T> {
         let bit_val: u8 = self.read_bit()?.into();
         Ok(bit_val.into())
