@@ -1,6 +1,7 @@
 use crate::bit::Bit;
+use crate::error::CursorError::BufferOverflow;
 use crate::error::CursorResult;
-use crate::helpers::{read_bit_as, read_byte};
+use crate::helpers::{read_bit_as, read_byte, read_bytes};
 use crate::readable_buf::ReadableBuf;
 use crate::some_readable_buf::SomeReadableBuf;
 use std::cell::RefCell;
@@ -9,6 +10,16 @@ use std::ops::{AddAssign, Div, Rem};
 pub struct ByteBufferSlice<'a> {
     pub buf: &'a [u8],
     pub bit_offset: RefCell<usize>,
+}
+
+/// Constructors
+impl ByteBufferSlice<'_> {
+    pub fn from_slice(slice: &[u8], start_pos: usize, length: usize) -> ByteBufferSlice<'_> {
+        ByteBufferSlice {
+            buf: &slice[start_pos..][..length],
+            bit_offset: RefCell::new(0),
+        }
+    }
 }
 
 /// Private
@@ -55,11 +66,22 @@ impl ReadableBuf for ByteBufferSlice<'_> {
         Ok(byte)
     }
 
+    fn read_bytes(&self, num_bytes: usize) -> CursorResult<&[u8]> {
+        read_bytes(self.buf, self.byte_offset(), num_bytes)
+    }
+
     fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf> {
-        let b = ByteBufferSlice {
-            buf: &(self.buf[self.byte_offset()..][..length]),
-            bit_offset: RefCell::new(0),
-        };
-        Ok(SomeReadableBuf::ByteBufferSlice(b))
+        if self.byte_offset() + length >= self.buf.len() {
+            Err(BufferOverflow(format!(
+                "Cannot read {} bytes starting at position {} from buffer with length {}",
+                length,
+                self.byte_offset(),
+                self.buf.len(),
+            )))
+        } else {
+            Ok(SomeReadableBuf::ByteBufferSlice(
+                ByteBufferSlice::from_slice(&self.buf, self.byte_offset(), length),
+            ))
+        }
     }
 }

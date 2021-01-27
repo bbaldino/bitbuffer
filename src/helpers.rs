@@ -36,19 +36,14 @@ pub(crate) fn read_byte(buf: &[u8], byte_offset: usize) -> CursorResult<u8> {
     }
 }
 
-pub(crate) fn clone_bytes(
-    source: &[u8],
-    start_pos: usize,
-    num_bytes: usize,
-) -> CursorResult<Vec<u8>> {
-    let mut dest: Vec<u8> = vec![0; num_bytes];
+pub(crate) fn read_bytes(source: &[u8], start_pos: usize, num_bytes: usize) -> CursorResult<&[u8]> {
     let end_pos = start_pos + num_bytes;
-    if let Some(source) = source.get(start_pos..end_pos) {
-        dest.clone_from_slice(source);
-        Ok(dest)
-    } else {
-        Err(BufferOverflow(format!("Cannot take {} bytes from buffer, that would go to index {} and buffer only has length {}", num_bytes, end_pos, source.len())))
-    }
+    source.get(start_pos..end_pos).ok_or(BufferOverflow(format!(
+        "Cannot read {} bytes starting at position {} from buffer with length {}",
+        num_bytes,
+        start_pos,
+        source.len()
+    )))
 }
 
 #[cfg(test)]
@@ -66,5 +61,15 @@ mod tests {
     fn test_read_bit_as_error() {
         let buf = vec![0b00001111];
         assert!(read_bit_as::<u8>(&buf, 1, 5).err().is_some());
+    }
+
+    #[test]
+    fn test_read_bytes() {
+        let buf: Vec<u8> = vec![1, 2, 3, 4];
+
+        let bytes = read_bytes(&buf, 1, 2).unwrap();
+        assert_eq!([2, 3], bytes);
+
+        assert!(read_bytes(&buf, 5, 1).err().is_some());
     }
 }

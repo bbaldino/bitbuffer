@@ -54,6 +54,8 @@ pub trait ReadableBuf {
         Ok(value)
     }
 
+    fn read_bytes(&self, num_bytes: usize) -> CursorResult<&[u8]>;
+
     /// Create a 'sub buffer' which starts at this ReadableBuf's current position
     /// and contains the next |length| bytes.
     /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
