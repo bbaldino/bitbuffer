@@ -1,5 +1,5 @@
 use crate::bit::Bit;
-use crate::error::CursorError::BufferOverflow;
+use crate::error::CursorError::BufferTooShort;
 use crate::error::CursorResult;
 use crate::helpers::{read_bit_as, read_byte, read_bytes};
 use crate::readable_buf::ReadableBuf;
@@ -72,12 +72,11 @@ impl ReadableBuf for ByteBufferSlice<'_> {
 
     fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf> {
         if self.byte_offset() + length >= self.buf.len() {
-            Err(BufferOverflow(format!(
-                "Cannot read {} bytes starting at position {} from buffer with length {}",
-                length,
-                self.byte_offset(),
-                self.buf.len(),
-            )))
+            Err(BufferTooShort {
+                start_pos: self.byte_offset(),
+                num_bytes: length,
+                buffer_size: self.buf.len(),
+            })
         } else {
             Ok(SomeReadableBuf::ByteBufferSlice(
                 ByteBufferSlice::from_slice(&self.buf, self.byte_offset(), length),

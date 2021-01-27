@@ -1,4 +1,4 @@
-use crate::error::CursorError::BufferOverflow;
+use crate::error::CursorError::{BufferTooShort, OutOfBounds};
 use crate::error::CursorResult;
 
 /// Retrieve the |bit_offset| bit of the |byte_offset| byte from |buf| and return it as T
@@ -12,15 +12,10 @@ pub(crate) fn read_bit_as<T: From<u8>>(
         let shift_amount = 7 - bit_offset;
         Ok(((byte >> shift_amount) & 0x1).into())
     } else {
-        Err(BufferOverflow(
-            format!(
-                "Buffer exhausted: cannot access byte {}, bit {}.  Buffer has length {}",
-                byte_offset,
-                bit_offset,
-                buf.len()
-            )
-            .to_owned(),
-        ))
+        Err(OutOfBounds {
+            attempted_index: byte_offset,
+            buffer_size: buf.len(),
+        })
     }
 }
 
@@ -28,22 +23,20 @@ pub(crate) fn read_byte(buf: &[u8], byte_offset: usize) -> CursorResult<u8> {
     if let Some(b) = buf.get(byte_offset) {
         Ok(*b)
     } else {
-        Err(BufferOverflow(format!(
-            "Buffer exhausted: cannot access byte {}.  Buffer has length {}",
-            byte_offset,
-            buf.len()
-        )))
+        Err(OutOfBounds {
+            attempted_index: byte_offset,
+            buffer_size: buf.len(),
+        })
     }
 }
 
 pub(crate) fn read_bytes(source: &[u8], start_pos: usize, num_bytes: usize) -> CursorResult<&[u8]> {
     let end_pos = start_pos + num_bytes;
-    source.get(start_pos..end_pos).ok_or(BufferOverflow(format!(
-        "Cannot read {} bytes starting at position {} from buffer with length {}",
-        num_bytes,
+    source.get(start_pos..end_pos).ok_or(BufferTooShort {
         start_pos,
-        source.len()
-    )))
+        num_bytes,
+        buffer_size: source.len(),
+    })
 }
 
 #[cfg(test)]
