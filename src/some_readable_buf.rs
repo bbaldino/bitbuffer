@@ -1,10 +1,11 @@
 use crate::byte_buffer::ByteBuffer;
 use crate::byte_buffer_slice::ByteBufferSlice;
 use crate::readable_buf::ReadableBuf;
-use std::ops::Deref;
 
-/// This enum allows methods like 'sub_buffer' to return another ReadableBuf without
-/// using dynamic dispatch (which would require a heap allocation).
+/// This enum allows methods like 'sub_buffer' to return a ReadableBuf without
+/// using dynamic dispatch (which would require a heap allocation)--instead we return
+/// an instance of this enum.  Combined with the Deref impl below, the enum can be
+/// used as a ReadableBuf.
 pub enum SomeReadableBuf<'a> {
     ByteBuffer(ByteBuffer<'a>),
     ByteBufferSlice(ByteBufferSlice<'a>),

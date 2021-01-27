@@ -3,6 +3,8 @@ use crate::error::CursorResult;
 use crate::some_readable_buf::SomeReadableBuf;
 use std::ops::{BitOrAssign, ShlAssign};
 
+/// Defines methods to make reading fields from a buffer easier by providing methods for
+/// reading bits, u8s, u32s, etc.
 pub trait ReadableBuf {
     /// Return how many bytes are remaining in this buffer.  Note that "half-consumed" bytes
     /// (from reading individual bits) are counted as "full" bytes here.
@@ -54,11 +56,11 @@ pub trait ReadableBuf {
     /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
     /// the position of the parent buffer by the size of the sub-buffer.  I think I'll have
     /// to see how it feels when using it and see which makes more sense.
-    fn sub_buffer<'a>(&'a self, length: usize) -> CursorResult<SomeReadableBuf>;
+    fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf>;
 }
 
-// In order to make ReadableBuf usable as a trait object (so I can do things like
-// return Box<dyn ReadableBuf>), I needed to move the generic methods out of the
+// In order to make ReadableBuf usable as a trait object (which is necessary to get
+// a lot of the syntax to be nicer), I needed to move the generic methods out of the
 // ReadableBuf trait.  I can still achieve the same thing by moving _those_ methods
 // into another trait, and then implementing that trait for ReadableBuf.  However,
 // if I have a ByteBuffer, it looks like I'm able to call the ReadableBuf methods

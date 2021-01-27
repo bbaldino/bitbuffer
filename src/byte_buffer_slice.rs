@@ -46,7 +46,7 @@ impl ReadableBuf for ByteBufferSlice<'_> {
         Ok(byte)
     }
 
-    fn sub_buffer<'a>(&'a self, length: usize) -> CursorResult<SomeReadableBuf<'a>> {
+    fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf> {
         let b = ByteBufferSlice {
             buf: &(self.buf[self.byte_offset()..][..length]),
             bit_offset: RefCell::new(0),
