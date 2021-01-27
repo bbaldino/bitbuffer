@@ -3,6 +3,7 @@ use crate::byte_buffer_slice::ByteBufferSlice;
 use crate::error::CursorResult;
 use crate::helpers::{read_byte, take_bit_as};
 use crate::readable_buf::{ReadableBuf, ReadableBufExtra};
+use crate::some_readable_buf::SomeReadableBuf;
 use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::ops::{AddAssign, Div, Rem};
@@ -82,15 +83,12 @@ impl ReadableBuf for ByteBuffer<'_> {
         Ok(byte)
     }
 
-    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf + 'b>>
-    where
-        'a: 'b,
-    {
+    fn sub_buffer<'a>(&'a self, length: usize) -> CursorResult<SomeReadableBuf<'a>> {
         let b = ByteBufferSlice {
             buf: &(self.buf[self.byte_offset()..][..length]),
             bit_offset: RefCell::new(0),
         };
-        Ok(Box::new(b))
+        Ok(SomeReadableBuf::ByteBufferSlice(b))
     }
 }
 

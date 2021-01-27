@@ -1,5 +1,6 @@
 use crate::bit::Bit;
 use crate::error::CursorResult;
+use crate::some_readable_buf::SomeReadableBuf;
 use std::ops::{BitOrAssign, ShlAssign};
 
 pub trait ReadableBuf {
@@ -53,9 +54,7 @@ pub trait ReadableBuf {
     /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
     /// the position of the parent buffer by the size of the sub-buffer.  I think I'll have
     /// to see how it feels when using it and see which makes more sense.
-    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<Box<dyn ReadableBuf + 'b>>
-    where
-        'a: 'b;
+    fn sub_buffer<'a>(&'a self, length: usize) -> CursorResult<SomeReadableBuf>;
 }
 
 // In order to make ReadableBuf usable as a trait object (so I can do things like
