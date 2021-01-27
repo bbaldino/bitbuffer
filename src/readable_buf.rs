@@ -6,8 +6,9 @@ use std::ops::{BitOrAssign, ShlAssign};
 /// Defines methods to make reading fields from a buffer easier by providing methods for
 /// reading bits, u8s, u32s, etc.
 pub trait ReadableBuf {
-    /// Return how many bytes are remaining in this buffer.  Note that "half-consumed" bytes
-    /// (from reading individual bits) are counted as "full" bytes here.
+    /// Return how many bytes are remaining in this buffer.  Note that this
+    /// does not take into account a partially read byte (which
+    /// is considered as a 'whole' byte)
     fn bytes_remaining(&self) -> usize;
 
     /// Consume the next bit and return it as a bool

@@ -1,10 +1,10 @@
-mod bit;
-mod byte_buffer;
+pub mod bit;
+pub mod byte_buffer;
 mod byte_buffer_slice;
 mod error;
 mod helpers;
-mod readable_buf;
-mod some_readable_buf;
+pub mod readable_buf;
+pub mod some_readable_buf;
 
 #[cfg(test)]
 mod tests {

@@ -2,7 +2,7 @@ use crate::bit::Bit;
 use crate::byte_buffer_slice::ByteBufferSlice;
 use crate::error::CursorResult;
 use crate::helpers::{read_bit_as, read_byte};
-use crate::readable_buf::{ReadableBuf, ReadableBufExtra};
+use crate::readable_buf::ReadableBuf;
 use crate::some_readable_buf::SomeReadableBuf;
 use std::cell::RefCell;
 use std::marker::PhantomData;
@@ -48,19 +48,9 @@ impl ByteBuffer<'_> {
     }
 }
 
-/// Public
-impl ByteBuffer<'_> {
-    /// Return how many bytes are remaining in this buffer.  Note that this
-    /// does not take into account a partially consumed/written byte (which
-    /// is considered as a 'whole' byte)
-    pub fn bytes_remaining(&self) -> usize {
-        self.buf.len() - self.byte_offset()
-    }
-}
-
 impl ReadableBuf for ByteBuffer<'_> {
     fn bytes_remaining(&self) -> usize {
-        self.bytes_remaining()
+        self.buf.len() - self.byte_offset()
     }
 
     fn read_bit(&self) -> CursorResult<Bit> {
@@ -88,6 +78,7 @@ impl ReadableBuf for ByteBuffer<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::readable_buf::ReadableBufExtra;
 
     #[test]
     fn test_bytes_remaining() {
