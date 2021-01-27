@@ -76,7 +76,7 @@ pub trait ReadableBufExtra {
         T: From<u8> + Default + ShlAssign<u8> + BitOrAssign;
 }
 
-impl ReadableBufExtra for dyn ReadableBuf {
+impl<'a> ReadableBufExtra for dyn ReadableBuf + 'a {
     fn read_bit_as<T: From<u8>>(&self) -> CursorResult<T> {
         let bit_val: u8 = self.read_bit()?.into();
         Ok(bit_val.into())
