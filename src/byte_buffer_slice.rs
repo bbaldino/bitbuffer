@@ -1,10 +1,10 @@
 use crate::bit::Bit;
 use crate::error::CursorResult;
-use crate::helpers::read_byte;
+use crate::helpers::{read_bit_as, read_byte};
 use crate::readable_buf::ReadableBuf;
 use crate::some_readable_buf::SomeReadableBuf;
 use std::cell::RefCell;
-use std::ops::{AddAssign, Div};
+use std::ops::{AddAssign, Div, Rem};
 
 pub struct ByteBufferSlice<'a> {
     pub buf: &'a [u8],
@@ -16,6 +16,16 @@ impl ByteBufferSlice<'_> {
     /// Return the current byte offset into the buffer
     fn byte_offset(&self) -> usize {
         self.bit_offset.borrow().div(8)
+    }
+
+    /// Return the current bit position within the current byte
+    fn bit_position(&self) -> usize {
+        self.bit_offset.borrow().rem(8)
+    }
+
+    /// Move the current position forward by |num_bits| bits
+    fn advance_bits(&self, num_bits: usize) {
+        self.bit_offset.borrow_mut().add_assign(num_bits);
     }
 
     /// Move the current position forward by |num_bytes| bytes
@@ -32,12 +42,11 @@ impl ReadableBuf for ByteBufferSlice<'_> {
         self.buf.len() - self.byte_offset()
     }
 
-    fn read_bit_as_bool(&self) -> CursorResult<bool> {
-        unimplemented!()
-    }
-
     fn read_bit(&self) -> CursorResult<Bit> {
-        unimplemented!()
+        read_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| {
+            self.advance_bits(1);
+            b
+        })
     }
 
     fn read_u8(&self) -> CursorResult<u8> {

@@ -11,7 +11,9 @@ pub trait ReadableBuf {
     fn bytes_remaining(&self) -> usize;
 
     /// Consume the next bit and return it as a bool
-    fn read_bit_as_bool(&self) -> CursorResult<bool>;
+    fn read_bit_as_bool(&self) -> CursorResult<bool> {
+        self.read_bit().map(|b| b.into())
+    }
 
     fn read_bit(&self) -> CursorResult<Bit>;
 

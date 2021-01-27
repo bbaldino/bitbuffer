@@ -1,7 +1,7 @@
 use crate::bit::Bit;
 use crate::byte_buffer_slice::ByteBufferSlice;
 use crate::error::CursorResult;
-use crate::helpers::{read_byte, take_bit_as};
+use crate::helpers::{read_bit_as, read_byte};
 use crate::readable_buf::{ReadableBuf, ReadableBufExtra};
 use crate::some_readable_buf::SomeReadableBuf;
 use std::cell::RefCell;
@@ -63,15 +63,8 @@ impl ReadableBuf for ByteBuffer<'_> {
         self.bytes_remaining()
     }
 
-    fn read_bit_as_bool(&self) -> CursorResult<bool> {
-        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| {
-            self.advance_bits(1);
-            b.into()
-        })
-    }
-
     fn read_bit(&self) -> CursorResult<Bit> {
-        take_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| {
+        read_bit_as::<Bit>(&self.buf, self.byte_offset(), self.bit_position()).map(|b| {
             self.advance_bits(1);
             b
         })

@@ -2,7 +2,7 @@ use crate::error::CursorError::BufferOverflow;
 use crate::error::CursorResult;
 
 /// Retrieve the |bit_offset| bit of the |byte_offset| byte from |buf| and return it as T
-pub(crate) fn take_bit_as<T: From<u8>>(
+pub(crate) fn read_bit_as<T: From<u8>>(
     buf: &[u8],
     byte_offset: usize,
     bit_offset: usize,
@@ -56,15 +56,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_take_bit_as() {
+    fn test_read_bit_as() {
         let buf = vec![0b00001111];
-        let bit = take_bit_as(&buf, 0, 5).unwrap();
+        let bit = read_bit_as(&buf, 0, 5).unwrap();
         assert_eq!(1, bit);
     }
 
     #[test]
-    fn test_take_bit_as_error() {
+    fn test_read_bit_as_error() {
         let buf = vec![0b00001111];
-        assert!(take_bit_as::<u8>(&buf, 1, 5).err().is_some());
+        assert!(read_bit_as::<u8>(&buf, 1, 5).err().is_some());
     }
 }
