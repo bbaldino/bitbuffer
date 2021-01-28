@@ -71,7 +71,7 @@ impl ReadableBuf for ByteBufferSlice<'_> {
     }
 
     fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf> {
-        if self.byte_offset() + length >= self.buf.len() {
+        if self.byte_offset() + length > self.buf.len() {
             Err(BufferTooShort {
                 start_pos: self.byte_offset(),
                 num_bytes: length,

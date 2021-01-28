@@ -72,7 +72,7 @@ impl ReadableBuf for ByteBuffer<'_> {
     }
 
     fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf> {
-        if self.byte_offset() + length >= self.buf.len() {
+        if self.byte_offset() + length > self.buf.len() {
             Err(BufferTooShort {
                 start_pos: self.byte_offset(),
                 num_bytes: length,
@@ -154,5 +154,10 @@ mod tests {
         let sb = bb.sub_buffer(2).unwrap();
         assert_eq!(sb.read_u8().unwrap(), 1u8);
         assert_eq!(sb.read_u8().unwrap(), 2u8);
+
+        let sb = bb.sub_buffer(3).unwrap();
+        assert_eq!(sb.read_u8().unwrap(), 1u8);
+        assert_eq!(sb.read_u8().unwrap(), 2u8);
+        assert_eq!(sb.read_u8().unwrap(), 3u8);
     }
 }
