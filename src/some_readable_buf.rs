@@ -11,6 +11,16 @@ pub enum SomeReadableBuf<'a> {
     ByteBufferSlice(ByteBufferSlice<'a>),
 }
 
+impl SomeReadableBuf<'_> {
+    pub fn from_byte_buffer(bb: ByteBuffer<'_>) -> SomeReadableBuf<'_> {
+        SomeReadableBuf::ByteBuffer(bb)
+    }
+
+    pub fn from_vec<'a>(buf: Vec<u8>) -> SomeReadableBuf<'a> {
+        SomeReadableBuf::ByteBuffer(ByteBuffer::from_vec(buf))
+    }
+}
+
 /// Implementing Deref for SomeReadableBuf allows it to be used directly as a
 /// ReadableBuf trait object.
 impl<'a> std::ops::Deref for SomeReadableBuf<'a> {
