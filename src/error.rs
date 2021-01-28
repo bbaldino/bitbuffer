@@ -3,7 +3,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum CursorError {
     #[error(
-        "Out of bounds: tried accessing position {attempted_index}, but buffer has size {buffer_size}"
+        "Buffer index out of bounds: tried accessing position {attempted_index}, but buffer has size {buffer_size}"
     )]
     OutOfBounds {
         attempted_index: usize,
