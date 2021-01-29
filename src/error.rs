@@ -9,7 +9,7 @@ pub enum CursorError {
         attempted_index: usize,
         buffer_size: usize,
     },
-    #[error("Buffer too short: tried accessing {num_bytes} bytes starting at position {start_pos}, but buffer has size {buffer_size}")]
+    #[error("Buffer too short: tried accessing {num_bytes} bytes starting at position {start_pos}, but buffer only has size {buffer_size}")]
     BufferTooShort {
         start_pos: usize,
         num_bytes: usize,
