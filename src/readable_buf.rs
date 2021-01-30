@@ -1,6 +1,6 @@
 use crate::bit::Bit;
+use crate::byte_buffer_slice::ByteBufferSlice;
 use crate::error::CursorResult;
-use crate::some_readable_buf::SomeReadableBuf;
 use std::ops::{BitOrAssign, ShlAssign};
 
 /// Defines methods to make reading fields from a buffer easier by providing methods for
@@ -61,7 +61,11 @@ pub trait ReadableBuf {
     /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
     /// the position of the parent buffer by the size of the sub-buffer.  I think I'll have
     /// to see how it feels when using it and see which makes more sense.
-    fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf>;
+    // fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf>;
+
+    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<ByteBufferSlice<'b>>
+    where
+        'a: 'b;
 }
 
 // In order to make ReadableBuf usable as a trait object (which is necessary to get

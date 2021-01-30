@@ -4,7 +4,6 @@ use crate::error::CursorError::BufferTooShort;
 use crate::error::CursorResult;
 use crate::helpers::{read_bit_as, read_byte, read_bytes};
 use crate::readable_buf::ReadableBuf;
-use crate::some_readable_buf::SomeReadableBuf;
 use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::ops::{AddAssign, Div, Rem};
@@ -71,7 +70,10 @@ impl ReadableBuf for ByteBuffer<'_> {
         read_bytes(&self.buf, self.byte_offset(), num_bytes)
     }
 
-    fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf> {
+    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<ByteBufferSlice<'b>>
+    where
+        'a: 'b,
+    {
         if self.byte_offset() + length > self.buf.len() {
             Err(BufferTooShort {
                 start_pos: self.byte_offset(),
@@ -79,8 +81,10 @@ impl ReadableBuf for ByteBuffer<'_> {
                 buffer_size: self.buf.len(),
             })
         } else {
-            Ok(SomeReadableBuf::ByteBufferSlice(
-                ByteBufferSlice::from_slice(&self.buf, self.byte_offset(), length),
+            Ok(ByteBufferSlice::from_slice(
+                &self.buf,
+                self.byte_offset(),
+                length,
             ))
         }
     }
