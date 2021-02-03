@@ -81,11 +81,9 @@ impl ReadableBuf for ByteBuffer<'_> {
                 buffer_size: self.buf.len(),
             })
         } else {
-            Ok(ByteBufferSlice::from_slice(
-                &self.buf,
-                self.byte_offset(),
-                length,
-            ))
+            let slice = ByteBufferSlice::from_slice(&self.buf, self.byte_offset(), length);
+            self.advance_bytes(length);
+            Ok(slice)
         }
     }
 }
