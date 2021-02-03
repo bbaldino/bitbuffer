@@ -67,7 +67,10 @@ impl ReadableBuf for ByteBuffer<'_> {
     }
 
     fn read_bytes(&self, num_bytes: usize) -> CursorResult<&[u8]> {
-        read_bytes(&self.buf, self.byte_offset(), num_bytes)
+        read_bytes(&self.buf, self.byte_offset(), num_bytes).and_then(|bytes| {
+            self.advance_bytes(num_bytes);
+            Ok(bytes)
+        })
     }
 
     fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<ByteBufferSlice<'b>>
