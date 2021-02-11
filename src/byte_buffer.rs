@@ -164,9 +164,7 @@ mod tests {
         assert_eq!(sb.read_u8().unwrap(), 1u8);
         assert_eq!(sb.read_u8().unwrap(), 2u8);
 
-        let sb = bb.sub_buffer(3).unwrap();
-        assert_eq!(sb.read_u8().unwrap(), 1u8);
-        assert_eq!(sb.read_u8().unwrap(), 2u8);
+        let sb = bb.sub_buffer(1).unwrap();
         assert_eq!(sb.read_u8().unwrap(), 3u8);
     }
 }
