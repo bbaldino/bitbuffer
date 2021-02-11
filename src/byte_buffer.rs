@@ -60,6 +60,10 @@ impl ReadableBuf for ByteBuffer<'_> {
         })
     }
 
+    fn peek_u8(&self) -> CursorResult<u8> {
+        read_byte(&self.buf, self.byte_offset())
+    }
+
     fn read_u8(&self) -> CursorResult<u8> {
         let byte = read_byte(&self.buf, self.byte_offset())?;
         self.advance_bytes(1);

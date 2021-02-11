@@ -18,6 +18,9 @@ pub trait ReadableBuf {
 
     fn read_bit(&self) -> CursorResult<Bit>;
 
+    // Peek at the next byte without advancing the position
+    fn peek_u8(&self) -> CursorResult<u8>;
+
     /// Consume and return the next byte as a u8
     fn read_u8(&self) -> CursorResult<u8>;
 
