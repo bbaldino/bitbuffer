@@ -12,20 +12,20 @@ pub trait ReadableBuf {
     fn bytes_remaining(&self) -> usize;
 
     /// Consume the next bit and return it as a bool
-    fn read_bit_as_bool(&self) -> CursorResult<bool> {
+    fn read_bit_as_bool(&mut self) -> CursorResult<bool> {
         self.read_bit().map(|b| b.into())
     }
 
-    fn read_bit(&self) -> CursorResult<Bit>;
+    fn read_bit(&mut self) -> CursorResult<Bit>;
 
     // Peek at the next byte without advancing the position
     fn peek_u8(&self) -> CursorResult<u8>;
 
     /// Consume and return the next byte as a u8
-    fn read_u8(&self) -> CursorResult<u8>;
+    fn read_u8(&mut self) -> CursorResult<u8>;
 
     /// Consume and return the next 2 bytes as a u16
-    fn read_u16(&self) -> CursorResult<u16> {
+    fn read_u16(&mut self) -> CursorResult<u16> {
         let mut value: u16 = 0;
         for _ in 0..2 {
             value <<= 8;
@@ -36,7 +36,7 @@ pub trait ReadableBuf {
     }
 
     /// Consume and return the next 3 bytes as a u32
-    fn read_u24(&self) -> CursorResult<u32> {
+    fn read_u24(&mut self) -> CursorResult<u32> {
         let mut value: u32 = 0;
         for _ in 0..3 {
             value <<= 8;
@@ -47,7 +47,7 @@ pub trait ReadableBuf {
     }
 
     /// Consume and return the next 4 bytes as a u32
-    fn read_u32(&self) -> CursorResult<u32> {
+    fn read_u32(&mut self) -> CursorResult<u32> {
         let mut value: u32 = 0;
         for _ in 0..4 {
             value <<= 8;
@@ -57,7 +57,7 @@ pub trait ReadableBuf {
         Ok(value)
     }
 
-    fn read_bytes(&self, num_bytes: usize) -> CursorResult<&[u8]>;
+    fn read_bytes(&mut self, num_bytes: usize) -> CursorResult<&[u8]>;
 
     /// Create a 'sub buffer' which starts at this ReadableBuf's current position
     /// and contains the next |length| bytes.
@@ -66,7 +66,7 @@ pub trait ReadableBuf {
     /// to see how it feels when using it and see which makes more sense.
     // fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf>;
 
-    fn sub_buffer<'a, 'b>(&'a self, length: usize) -> CursorResult<ByteBufferSlice<'b>>
+    fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> CursorResult<ByteBufferSlice<'b>>
     where
         'a: 'b;
 }
@@ -82,21 +82,21 @@ pub trait ReadableBuf {
 // works fine with calling methods defined in the secondary trait.
 pub trait ReadableBufExtra {
     /// Consume the next bit and return it as type T
-    fn read_bit_as<T: From<u8>>(&self) -> CursorResult<T>;
+    fn read_bit_as<T: From<u8>>(&mut self) -> CursorResult<T>;
 
     /// Consume the next |num_bits| and return them as type T
-    fn read_bits_as<T>(&self, num_bits: usize) -> CursorResult<T>
+    fn read_bits_as<T>(&mut self, num_bits: usize) -> CursorResult<T>
     where
         T: From<u8> + Default + ShlAssign<u8> + BitOrAssign;
 }
 
 impl<'a> ReadableBufExtra for dyn ReadableBuf + 'a {
-    fn read_bit_as<T: From<u8>>(&self) -> CursorResult<T> {
+    fn read_bit_as<T: From<u8>>(&mut self) -> CursorResult<T> {
         let bit_val: u8 = self.read_bit()?.into();
         Ok(bit_val.into())
     }
 
-    fn read_bits_as<T>(&self, num_bits: usize) -> CursorResult<T>
+    fn read_bits_as<T>(&mut self, num_bits: usize) -> CursorResult<T>
     where
         T: From<u8> + Default + ShlAssign<u8> + BitOrAssign,
     {
