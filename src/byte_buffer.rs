@@ -14,7 +14,7 @@ pub struct ByteBuffer<'a> {
     marker: PhantomData<&'a ()>,
 }
 
-/// Ctors
+/// Constructors
 impl<'a> ByteBuffer<'a> {
     pub fn from_vec(buf: Vec<u8>) -> ByteBuffer<'a> {
         ByteBuffer {

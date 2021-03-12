@@ -62,10 +62,8 @@ pub trait ReadableBuf {
     /// Create a 'sub buffer' which starts at this ReadableBuf's current position
     /// and contains the next |length| bytes.
     /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
-    /// the position of the parent buffer by the size of the sub-buffer.  I think I'll have
-    /// to see how it feels when using it and see which makes more sense.
-    // fn sub_buffer(&self, length: usize) -> CursorResult<SomeReadableBuf>;
-
+    ///  the position of the parent buffer by the size of the sub-buffer.  I think I'll have
+    ///  to see how it feels when using it and see which makes more sense.
     fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> CursorResult<ByteBufferSlice<'b>>
     where
         'a: 'b;
