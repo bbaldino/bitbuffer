@@ -53,6 +53,13 @@ pub(crate) fn read_bits_as<T>(
 where
     T: From<u8> + Default + ShlAssign<u8> + BitOrAssign,
 {
+    // TODO: is checking this way slow?
+    if buf.get(byte_offset).is_none() {
+        return Err(BitBufferError::OutOfBounds {
+            attempted_index: byte_offset,
+            buffer_size: buf.len(),
+        });
+    }
     if bit_offset + num_bits > 8 {
         // TODO: better error
         return Err(BitBufferError::OutOfBounds {
@@ -120,6 +127,7 @@ mod tests {
         assert_eq!(0b0000u8, read_bits_as::<u8>(&data, 1, 0, 4).unwrap());
         assert_eq!(0b1111u8, read_bits_as::<u8>(&data, 1, 4, 4).unwrap());
         assert_eq!(0b0110011u8, read_bits_as::<u8>(&data, 0, 1, 7).unwrap());
+        assert!(read_bits_as::<u8>(&Vec::new(), 0, 0, 0).is_err());
     }
 
     #[test]
