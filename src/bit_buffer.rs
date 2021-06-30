@@ -1,7 +1,7 @@
 use crate::bit::Bit;
 use crate::error::BitBufferError::BufferTooShort;
 use crate::error::BitBufferResult;
-use crate::helpers::{read_bit_as, read_byte, read_bytes};
+use crate::helpers::{read_bit_as, read_bits_as, read_byte, read_bytes};
 use crate::readable_buf::ReadableBuf;
 use std::ops::{AddAssign, Div, Rem};
 
@@ -59,6 +59,19 @@ where
         })
     }
 
+    fn read_bits_as_u8(&mut self, num_bits: usize) -> BitBufferResult<u8> {
+        read_bits_as::<u8>(
+            self.inner.as_ref(),
+            self.byte_offset(),
+            self.bit_position(),
+            num_bits,
+        )
+        .map(|bits| {
+            self.advance_bits(num_bits);
+            bits
+        })
+    }
+
     fn peek_u8(&self) -> BitBufferResult<u8> {
         read_byte(self.inner.as_ref(), self.byte_offset())
     }
@@ -100,7 +113,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::readable_buf::ReadableBufExtra;
 
     #[test]
     fn test_bytes_remaining() {
@@ -110,7 +122,7 @@ mod tests {
         assert_eq!(bb.bytes_remaining(), 3);
         let _ = bb.read_bit();
         assert_eq!(bb.bytes_remaining(), 3);
-        let _ = (&mut bb as &mut dyn ReadableBuf).read_bits_as::<u8>(7);
+        let _ = bb.read_bits_as_u8(7);
         assert_eq!(bb.bytes_remaining(), 2);
 
         let _ = bb.read_u8();

@@ -1,7 +1,6 @@
 use crate::bit::Bit;
 use crate::bit_buffer::BitBuffer;
 use crate::error::BitBufferResult;
-use std::ops::{BitOrAssign, ShlAssign};
 
 /// Defines methods to make reading fields from a buffer easier by providing methods for
 /// reading bits, u8s, u32s, etc.
@@ -17,6 +16,8 @@ pub trait ReadableBuf {
     }
 
     fn read_bit(&mut self) -> BitBufferResult<Bit>;
+
+    fn read_bits_as_u8(&mut self, num_bits: usize) -> BitBufferResult<u8>;
 
     // Peek at the next byte without advancing the position
     fn peek_u8(&self) -> BitBufferResult<u8>;
@@ -67,42 +68,4 @@ pub trait ReadableBuf {
     fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> BitBufferResult<BitBuffer<&'b [u8]>>
     where
         'a: 'b;
-}
-
-// In order to make ReadableBuf usable as a trait object (which is necessary to get
-// a lot of the syntax to be nicer), I needed to move the generic methods out of the
-// ReadableBuf trait.  I can still achieve the same thing by moving _those_ methods
-// into another trait, and then implementing that trait for ReadableBuf.  However,
-// if I have a ByteBuffer, it looks like I'm able to call the ReadableBuf methods
-// on it directly, but _can't_ call the methods defined in the secondary trait
-// directly: I'd need to cast it like below.  I don't think this will be a big
-// problem, though, as all the methods will use references to ReadableBuf, and that
-// works fine with calling methods defined in the secondary trait.
-pub trait ReadableBufExtra {
-    /// Consume the next bit and return it as type T
-    fn read_bit_as<T: From<u8>>(&mut self) -> BitBufferResult<T>;
-
-    /// Consume the next |num_bits| and return them as type T
-    fn read_bits_as<T>(&mut self, num_bits: usize) -> BitBufferResult<T>
-    where
-        T: From<u8> + Default + ShlAssign<u8> + BitOrAssign;
-}
-
-impl<'a> ReadableBufExtra for dyn ReadableBuf + 'a {
-    fn read_bit_as<T: From<u8>>(&mut self) -> BitBufferResult<T> {
-        let bit_val: u8 = self.read_bit()?.into();
-        Ok(bit_val.into())
-    }
-
-    fn read_bits_as<T>(&mut self, num_bits: usize) -> BitBufferResult<T>
-    where
-        T: From<u8> + Default + ShlAssign<u8> + BitOrAssign,
-    {
-        let mut value: T = Default::default();
-        for _ in 0..num_bits {
-            value <<= 1u8;
-            value |= self.read_bit_as()?;
-        }
-        Ok(value)
-    }
 }
