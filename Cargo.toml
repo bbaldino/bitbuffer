@@ -1,5 +1,5 @@
 [package]
-name = "cursor2"
+name = "bitbuffer"
 version = "0.1.0"
 authors = ["Brian Baldino <bbaldino@gmail.com>"]
 edition = "2018"
