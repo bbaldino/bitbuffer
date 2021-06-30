@@ -1,5 +1,5 @@
 use crate::bit::Bit;
-use crate::byte_buffer::ByteBuffer;
+use crate::byte_buffer::BitBuffer;
 use crate::error::BitBufferResult;
 use std::ops::{BitOrAssign, ShlAssign};
 
@@ -64,7 +64,7 @@ pub trait ReadableBuf {
     /// TODO: it's not clear to me whether or not grabbing a sub-buffer should ALSO advance
     ///  the position of the parent buffer by the size of the sub-buffer.  I think I'll have
     ///  to see how it feels when using it and see which makes more sense.
-    fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> BitBufferResult<ByteBuffer<&'b [u8]>>
+    fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> BitBufferResult<BitBuffer<&'b [u8]>>
     where
         'a: 'b;
 }
