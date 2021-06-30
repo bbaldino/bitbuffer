@@ -16,17 +16,17 @@ impl From<u8> for Bit {
     }
 }
 
-impl Into<bool> for Bit {
-    fn into(self) -> bool {
-        match self {
+impl From<Bit> for bool {
+    fn from(bit: Bit) -> Self {
+        match bit {
             Bit::Zero => false,
             Bit::One => true,
         }
     }
 }
 
-impl Into<u8> for Bit {
-    fn into(self) -> u8 {
-        self as u8
+impl From<Bit> for u8 {
+    fn from(bit: Bit) -> Self {
+        bit as u8
     }
 }

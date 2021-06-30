@@ -70,9 +70,9 @@ impl ReadableBuf for ByteBufferSlice<'_> {
     }
 
     fn read_bytes(&mut self, num_bytes: usize) -> CursorResult<&[u8]> {
-        read_bytes(&self.buf, self.byte_offset(), num_bytes).and_then(|bytes| {
+        read_bytes(&self.buf, self.byte_offset(), num_bytes).map(|bytes| {
             self.advance_bytes(num_bytes);
-            Ok(bytes)
+            bytes
         })
     }
 
