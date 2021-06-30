@@ -1,5 +1,5 @@
 use crate::bit::Bit;
-use crate::byte_buffer::BitBuffer;
+use crate::bit_buffer::BitBuffer;
 use crate::error::BitBufferResult;
 use std::ops::{BitOrAssign, ShlAssign};
 
