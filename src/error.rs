@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum CursorError {
+pub enum BitBufferError {
     #[error(
         "Buffer index out of bounds: tried accessing position {attempted_index}, but buffer has size {buffer_size}"
     )]
@@ -19,4 +19,4 @@ pub enum CursorError {
     },
 }
 
-pub type CursorResult<T> = Result<T, CursorError>;
+pub type BitBufferResult<T> = Result<T, BitBufferError>;

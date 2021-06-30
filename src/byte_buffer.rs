@@ -1,6 +1,6 @@
 use crate::bit::Bit;
-use crate::error::CursorError::BufferTooShort;
-use crate::error::CursorResult;
+use crate::error::BitBufferError::BufferTooShort;
+use crate::error::BitBufferResult;
 use crate::helpers::{read_bit_as, read_byte, read_bytes};
 use crate::readable_buf::ReadableBuf;
 use std::ops::{AddAssign, Div, Rem};
@@ -52,24 +52,24 @@ where
         self.inner.as_ref().len() - self.byte_offset()
     }
 
-    fn read_bit(&mut self) -> CursorResult<Bit> {
+    fn read_bit(&mut self) -> BitBufferResult<Bit> {
         read_bit_as::<Bit>(self.inner.as_ref(), self.byte_offset(), self.bit_position()).map(|b| {
             self.advance_bits(1);
             b
         })
     }
 
-    fn peek_u8(&self) -> CursorResult<u8> {
+    fn peek_u8(&self) -> BitBufferResult<u8> {
         read_byte(self.inner.as_ref(), self.byte_offset())
     }
 
-    fn read_u8(&mut self) -> CursorResult<u8> {
+    fn read_u8(&mut self) -> BitBufferResult<u8> {
         let byte = read_byte(self.inner.as_ref(), self.byte_offset())?;
         self.advance_bytes(1);
         Ok(byte)
     }
 
-    fn read_bytes(&mut self, num_bytes: usize) -> CursorResult<&[u8]> {
+    fn read_bytes(&mut self, num_bytes: usize) -> BitBufferResult<&[u8]> {
         self.advance_bytes(num_bytes);
         let bytes = read_bytes(
             self.inner.as_ref(),
@@ -79,7 +79,7 @@ where
         Ok(bytes)
     }
 
-    fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> CursorResult<ByteBuffer<&'b [u8]>>
+    fn sub_buffer<'a, 'b>(&'a mut self, length: usize) -> BitBufferResult<ByteBuffer<&'b [u8]>>
     where
         'a: 'b,
     {

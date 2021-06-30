@@ -1,12 +1,12 @@
-use crate::error::CursorError::{BufferTooShort, OutOfBounds};
-use crate::error::CursorResult;
+use crate::error::BitBufferError::{BufferTooShort, OutOfBounds};
+use crate::error::BitBufferResult;
 
 /// Retrieve the |bit_offset| bit of the |byte_offset| byte from |buf| and return it as T
 pub(crate) fn read_bit_as<T: From<u8>>(
     buf: &[u8],
     byte_offset: usize,
     bit_offset: usize,
-) -> CursorResult<T> {
+) -> BitBufferResult<T> {
     if let Some(byte) = buf.get(byte_offset) {
         // Shift right until the bit pointed to by bit_offset is the LSB
         let shift_amount = 7 - bit_offset;
@@ -19,7 +19,7 @@ pub(crate) fn read_bit_as<T: From<u8>>(
     }
 }
 
-pub(crate) fn read_byte(buf: &[u8], byte_offset: usize) -> CursorResult<u8> {
+pub(crate) fn read_byte(buf: &[u8], byte_offset: usize) -> BitBufferResult<u8> {
     if let Some(b) = buf.get(byte_offset) {
         Ok(*b)
     } else {
@@ -30,7 +30,11 @@ pub(crate) fn read_byte(buf: &[u8], byte_offset: usize) -> CursorResult<u8> {
     }
 }
 
-pub(crate) fn read_bytes(source: &[u8], start_pos: usize, num_bytes: usize) -> CursorResult<&[u8]> {
+pub(crate) fn read_bytes(
+    source: &[u8],
+    start_pos: usize,
+    num_bytes: usize,
+) -> BitBufferResult<&[u8]> {
     let end_pos = start_pos + num_bytes;
     source.get(start_pos..end_pos).ok_or(BufferTooShort {
         start_pos,
