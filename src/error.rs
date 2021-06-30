@@ -9,6 +9,8 @@ pub enum CursorError {
         attempted_index: usize,
         buffer_size: usize,
     },
+    // 'BufferTooShort' is used when reading multiple bytes and some amount of it was within
+    // bounds, but the full extent would go beyond the end of the buffer
     #[error("Buffer too short: tried accessing {num_bytes} bytes starting at position {start_pos}, but buffer only has size {buffer_size}")]
     BufferTooShort {
         start_pos: usize,
