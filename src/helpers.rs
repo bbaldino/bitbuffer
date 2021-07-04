@@ -14,10 +14,10 @@ pub(crate) fn read_bit_as<T: From<u8>>(
         let shift_amount = 7 - bit_offset;
         Ok(((byte >> shift_amount) & 0x1).into())
     } else {
-        Err(OutOfBounds {
+        Err(Box::new(OutOfBounds {
             attempted_index: byte_offset,
             buffer_size: buf.len(),
-        })
+        }))
     }
 }
 
@@ -55,22 +55,22 @@ where
 {
     // TODO: is checking this way slow?
     if buf.get(byte_offset).is_none() {
-        return Err(BitBufferError::OutOfBounds {
+        return Err(Box::new(BitBufferError::OutOfBounds {
             attempted_index: byte_offset,
             buffer_size: buf.len(),
-        });
+        }));
     }
     if bit_offset + num_bits > 8 {
         // TODO: better error
-        return Err(BitBufferError::OutOfBounds {
+        return Err(Box::new(BitBufferError::OutOfBounds {
             attempted_index: num_bits,
             buffer_size: (7 - bit_offset),
-        });
+        }));
     }
-    let mask = get_u8_mask(bit_offset, num_bits).ok_or(BitBufferError::OutOfBounds {
+    let mask = get_u8_mask(bit_offset, num_bits).ok_or(Box::new(BitBufferError::OutOfBounds {
         attempted_index: num_bits,
         buffer_size: (7 - bit_offset),
-    })?;
+    }))?;
     let mut result = buf[byte_offset] & mask;
 
     // Now shift the result back so the masked values are all the way to the right
@@ -83,10 +83,10 @@ pub(crate) fn read_byte(buf: &[u8], byte_offset: usize) -> BitBufferResult<u8> {
     if let Some(b) = buf.get(byte_offset) {
         Ok(*b)
     } else {
-        Err(OutOfBounds {
+        Err(Box::new(OutOfBounds {
             attempted_index: byte_offset,
             buffer_size: buf.len(),
-        })
+        }))
     }
 }
 
@@ -96,11 +96,13 @@ pub(crate) fn read_bytes(
     num_bytes: usize,
 ) -> BitBufferResult<&[u8]> {
     let end_pos = start_pos + num_bytes;
-    source.get(start_pos..end_pos).ok_or(BufferTooShort {
-        start_pos,
-        num_bytes,
-        buffer_size: source.len(),
-    })
+    source
+        .get(start_pos..end_pos)
+        .ok_or(Box::new(BufferTooShort {
+            start_pos,
+            num_bytes,
+            buffer_size: source.len(),
+        }))
 }
 
 #[cfg(test)]

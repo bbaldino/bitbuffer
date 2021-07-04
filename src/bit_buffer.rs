@@ -97,11 +97,11 @@ where
         'a: 'b,
     {
         if self.byte_offset() + length > self.inner.as_ref().len() {
-            Err(BufferTooShort {
+            Err(Box::new(BufferTooShort {
                 start_pos: self.byte_offset(),
                 num_bytes: length,
                 buffer_size: self.inner.as_ref().len(),
-            })
+            }))
         } else {
             self.advance_bytes(length);
             let slice = &self.inner.as_ref()[(self.byte_offset() - length)..][..length];

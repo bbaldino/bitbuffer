@@ -19,4 +19,4 @@ pub enum BitBufferError {
     },
 }
 
-pub type BitBufferResult<T> = Result<T, BitBufferError>;
+pub type BitBufferResult<T> = Result<T, Box<dyn std::error::Error>>;
