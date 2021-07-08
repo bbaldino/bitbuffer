@@ -1,10 +1,12 @@
+use std::fmt::Debug;
+
 use crate::bit::Bit;
 use crate::bit_buffer::BitBuffer;
 use crate::error::BitBufferResult;
 
 /// Defines methods to make reading fields from a buffer easier by providing methods for
 /// reading bits, u8s, u32s, etc.
-pub trait ReadableBuf {
+pub trait ReadableBuf: Debug {
     /// Return how many bytes are remaining in this buffer.  Note that this
     /// does not take into account a partially read byte (which
     /// is considered as a 'whole' byte)

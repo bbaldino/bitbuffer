@@ -3,9 +3,10 @@ use crate::error::BitBufferError::BufferTooShort;
 use crate::error::BitBufferResult;
 use crate::helpers::{read_bit_as, read_bits_as, read_byte, read_bytes};
 use crate::readable_buf::ReadableBuf;
+use std::fmt::Debug;
 use std::ops::{AddAssign, Div, Rem};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BitBuffer<T> {
     inner: T,
     bit_offset: usize,
@@ -47,6 +48,7 @@ impl<T> BitBuffer<T> {
 impl<T> ReadableBuf for BitBuffer<T>
 where
     T: AsRef<[u8]>,
+    T: Debug,
 {
     fn bytes_remaining(&self) -> usize {
         self.inner.as_ref().len() - self.byte_offset()
