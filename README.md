@@ -1,3 +1,5 @@
+Note: I now consider this defunct.  I replaced my usage of this in [rtp-parse](https://github.com/bbaldino/rtp-parse) with a combination of [bytebuffer](https://github.com/bbaldino/bytebuffer/tree/master) (for bit-address reading and writing) and [byteorder](https://github.com/BurntSushi/byteorder) for endianess-aware parsing of fields > 1 byte.
+
 # bitbuffer
 A bit-addressable buffer in Rust.
 
